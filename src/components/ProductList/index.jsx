@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 import productsApi from "apis/prodct";
 import { Header, PageLoader } from "components/commons";
@@ -6,6 +6,7 @@ import useDebounce from "hooks/useDebounce";
 import { Search } from "neetoicons";
 import { Input, NoData } from "neetoui";
 import { isEmpty } from "ramda";
+import { useTranslation } from "react-i18next";
 
 import ProductListItem from "./ProductListItem";
 
@@ -13,15 +14,17 @@ const ProductList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [searchKey, setSearchKey] = useState("");
+
+  const { t } = useTranslation();
+
   const debouncedSearchKey = useDebounce(searchKey);
+
   const fetchProducts = async () => {
     try {
-      const data = await productsApi.fetch({
-        searchTerm: debouncedSearchKey,
-      });
+      const data = await productsApi.fetch({ searchTerm: debouncedSearchKey });
       setProducts(data.products);
     } catch (error) {
-      console.log("error", error);
+      console.log(t("error.genericError", { error }));
     } finally {
       setIsLoading(false);
     }
@@ -31,16 +34,18 @@ const ProductList = () => {
     fetchProducts();
   }, [debouncedSearchKey]);
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) {
+    return <PageLoader />;
+  }
 
   return (
     <div className="flex h-screen flex-col">
       <Header
         shouldShowBackButton={false}
-        title="Smile cart"
+        title={t("title")}
         actionBlock={
           <Input
-            placeholder="Search products"
+            placeholder={t("searchProducts")}
             prefix={<Search />}
             type="search"
             value={searchKey}
@@ -49,7 +54,7 @@ const ProductList = () => {
         }
       />
       {isEmpty(products) ? (
-        <NoData className="h-full w-full" title="No products to show" />
+        <NoData className="h-full w-full" title={t("noData")} />
       ) : (
         <div className="grid grid-cols-2 justify-items-center gap-y-8 p-4 md:grid-cols-3 lg:grid-cols-4">
           {products.map(product => (
@@ -62,4 +67,3 @@ const ProductList = () => {
 };
 
 export default ProductList;
-// cartItems
